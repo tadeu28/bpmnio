@@ -1,0 +1,88 @@
+<!--
+    Márcio:
+
+    Para capturar qual elemento foi clicado e mandar uma requisição, olhe dentro do arquivo
+    bpmn-navigated-viewer.js. Há uma linha (11697) 'eventBus.on('element.click', function(event) {'
+    que é a função que é executada toda vez que você clicar em um elemento do BPMN.
+
+    No ProModGD eu custei descobrir isso, mas consegui. Tem uma função comentada la, que eu faço uma
+    requisição web, enviando o ID do elemento BPMN para a controller, e dali ela exibe as informações
+    do elemento BPMN em relação ao elemento do jogo. Essas informações vem do banco de dados de acordo com
+    o ID do elemento BPMN.
+
+    Espero que te ajude a incorporar isso no seu projeto. Vai ficar bem legal!
+    Não sei como você vai fazer para referenciar os CSS e o JS no seu projeto, pq não entendo muito de
+    JSF.
+
+    Vlw.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BPMN Views</title>
+
+    <!--CSS para os diagramas do BPMN.JS-->
+    <link rel="stylesheet" href="scripts/bpmn-js/dist/assets/diagram-js.css">
+    <link rel="stylesheet" href="scripts/bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css">
+
+    <!--JQUERY e o Vizualizador de BPMN-->
+    <script src="scripts/jquery-1.10.2.js"></script>
+    <script src="scripts/bpmn-js/dist/bpmn-navigated-viewer.js"></script>
+</head>
+<body>
+    BPMN File: <input type="file" id="bpmnModel" name="bpmnModel" /> <input type="button" id="btnCarregar" value="Carregar"/>
+    <!-- element to draw bpmn diagram in -->
+    <div id="viwerBpmn">
+        <div class="well" style="height: 600px" id="canvas"></div>
+    </div>
+
+    <script>
+        $(document).ready( function() {
+
+            $("#btnCarregar").click(function(){
+
+                var file = $("input[type=file]").get(0).files[0];
+
+                if(file !== undefined) {
+                    //Realizo a leitura do arquivo e coloco em memória pois o componente de leitura aceita somente o XML direto, e não o caminho do arquivo
+                    var reader = new FileReader();
+                    reader.readAsText(file);
+
+                    //Executa se conseguiu carregar o arquivo correntamente
+                    reader.onloadend = function (data) {
+                        carregarBpmn(data.target.result);
+                    };
+
+                    //Exibe o erro se não consegue carregar corretamente
+                    reader.onerror = function (error) {
+                        alert('It was not possiblem to import BPMN 2.0 diagram', err);
+                    }
+                }
+            });
+
+            function carregarBpmn(xml){
+                // Crio a instância do componente de visualização de BPMN
+                var BpmnNavigatedViewer = window.BpmnJS;
+                var bpmnViewer = new BpmnNavigatedViewer({
+                    //Coloco o elemento CANVAS responsável por exibir o diagrama BPMN
+                    container: '#canvas'
+                });
+
+                //Importo o BPMN - lembrando que é a estrutura mesmo do arquivo e não o caminho
+                bpmnViewer.importXML(xml, function(err) {
+                    if (err) {
+                        alert('It was not possiblem to import BPMN 2.0 diagram', err);
+                    } else {
+                        //Carrega o bpmn para dentro do elemento canvas
+                        var canvas = bpmnViewer.get('canvas');
+                        //Colcar o diagrama de acordo com o tamanho da tela e do elemento canvas.
+                        canvas.zoom('fit-viewport');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
